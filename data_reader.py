@@ -1,16 +1,24 @@
 from abc import ABC, abstractmethod
+import os
 from pathlib import Path
 
 import h5py
 import numpy as np
 
 
-def open_data_reader(file_path: str = "/scratch/ICIE/fritzenwallner/flight_6_siso.hdf5") -> "DataReader":
+def open_data_reader(file_path: str | None = None) -> "DataReader":
     """Return the appropriate DataReader subclass based on file extension.
 
     .h5 / .hdf5  ->  H5Reader
     .npz         ->  NpzReader
     """
+    if file_path is None:
+        file_path = os.getenv("SAR_DATA_PATH")
+    if not file_path:
+        raise ValueError(
+            "No data file path provided. Pass file_path explicitly or set SAR_DATA_PATH in the environment."
+        )
+
     suffix = Path(file_path).suffix.lower()
     if suffix in (".h5", ".hdf5"):
         return H5Reader(file_path)
