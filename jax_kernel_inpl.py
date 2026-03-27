@@ -64,6 +64,13 @@ def calc_energy(image):
 def integrate_velocity(positions, velocities, dt):
     return positions[0] + jnp.cumsum(velocities, axis=0) * dt
 
+def backproject_loss_(pixel_positions, radar_positions, radar_velocities, chirps, params):
+    image = backproject_sum(pixel_positions, radar_positions, chirps, params)
+    loss = calc_entropy(image)
+    return (loss, image)
+
+backproject_loss = jax.jit(jax.value_and_grad(backproject_loss_, has_aux=True, argnums=(1)))
+
 @jax.jit
 def entropy_grad_wrt_positions(pixel_positions, radar_positions, radar_velocities, chirps, params):
     positions_integrated = integrate_velocity(radar_positions, radar_velocities, params.dt)
